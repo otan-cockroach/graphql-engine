@@ -587,7 +587,7 @@ getScheduledEventsForDeliveryTx =
                                    (t.next_retry_at is not NULL and t.next_retry_at <= now())
                                   )
                                 )
-                          FOR UPDATE SKIP LOCKED
+                          FOR UPDATE
                           )
             RETURNING *
           )
@@ -613,7 +613,7 @@ getScheduledEventsForDeliveryTx =
                                    (t.next_retry_at is not NULL and t.next_retry_at <= now())
                                   )
                                 )
-                          FOR UPDATE SKIP LOCKED
+                          FOR UPDATE
                           )
             RETURNING *
           )

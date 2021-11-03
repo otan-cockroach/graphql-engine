@@ -325,7 +325,7 @@ fetchEvents source (FetchBatchSize fetchBatchSize) =
                     /* (see `init_pg_source.sql`) */
                     ORDER BY locked NULLS FIRST, next_retry_at NULLS FIRST, created_at
                     LIMIT $1
-                    FOR UPDATE SKIP LOCKED )
+                    FOR UPDATE )
       RETURNING id, schema_name, table_name, trigger_name, payload::json, tries, created_at
       |]
       (Identity limit)
@@ -359,7 +359,7 @@ fetchEventsMaintenanceMode sourceName fetchBatchSize = \case
                             and l.archived = 'f'
                       ORDER BY created_at
                       LIMIT $1
-                      FOR UPDATE SKIP LOCKED )
+                      FOR UPDATE )
         RETURNING id, schema_name, table_name, trigger_name, payload::json, tries, created_at
         |]
         (Identity limit)
