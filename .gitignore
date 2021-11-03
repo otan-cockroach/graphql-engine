@@ -18,3 +18,7 @@ venv
 
 # ignored so that everyone can have their own hie.yaml
 hie.yaml
+
+.python-venv/
+cabal.project.local
+dist-newstyle/
