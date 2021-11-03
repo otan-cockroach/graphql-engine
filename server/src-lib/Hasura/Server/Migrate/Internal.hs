@@ -87,8 +87,6 @@ setCatalogVersion ver time =
       defaultTxErrorHandler
       [Q.sql|
     INSERT INTO hdb_catalog.hdb_version (version, upgraded_on) VALUES ($1, $2)
-    ON CONFLICT ((version IS NOT NULL))
-    DO UPDATE SET version = $1, upgraded_on = $2
   |]
       (ver, time)
       False
