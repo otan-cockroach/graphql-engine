@@ -1,13 +1,13 @@
-/* We define our own uuid generator function that uses gen_random_uuid() underneath.
-   Since the column default is not directly referencing gen_random_uuid(),
+/* We define our own uuid generator function that uses gen_random_uuid()::string underneath.
+   Since the column default is not directly referencing gen_random_uuid()::string,
    it prevents the column default to be dropped when pgcrypto or public schema is dropped unwittingly.
 
    See https://github.com/hasura/graphql-engine/issues/4217
  */
-CREATE OR REPLACE FUNCTION hdb_catalog.gen_hasura_uuid() RETURNS uuid AS
-  -- We assume gen_random_uuid() is available in the search_path.
+--CREATE OR REPLACE FUNCTION gen_random_uuid()::string RETURNS uuid AS
+  -- We assume gen_random_uuid()::string is available in the search_path.
   -- This may not be true but we can't do much till https://github.com/hasura/graphql-engine/issues/3657
-'select gen_random_uuid()' LANGUAGE SQL;
+--'select gen_random_uuid()::string' LANGUAGE SQL;
 
 CREATE TABLE hdb_catalog.hdb_source_catalog_version(
   version TEXT NOT NULL,
@@ -19,7 +19,7 @@ ON hdb_catalog.hdb_source_catalog_version((version IS NOT NULL));
 
 CREATE TABLE hdb_catalog.event_log
 (
-  id TEXT DEFAULT hdb_catalog.gen_hasura_uuid() PRIMARY KEY,
+  id TEXT DEFAULT gen_random_uuid()::string PRIMARY KEY,
   schema_name TEXT NOT NULL,
   table_name TEXT NOT NULL,
   trigger_name TEXT NOT NULL,
@@ -47,7 +47,7 @@ CREATE INDEX event_log_fetch_events
 
 CREATE TABLE hdb_catalog.event_invocation_logs
 (
-  id TEXT DEFAULT hdb_catalog.gen_hasura_uuid() PRIMARY KEY,
+  id TEXT DEFAULT gen_random_uuid()::string PRIMARY KEY,
   event_id TEXT,
   status INTEGER,
   request JSON,
@@ -59,43 +59,3 @@ CREATE TABLE hdb_catalog.event_invocation_logs
 
 CREATE INDEX ON hdb_catalog.event_invocation_logs (event_id);
 
-CREATE OR REPLACE FUNCTION
-  hdb_catalog.insert_event_log(schema_name text, table_name text, trigger_name text, op text, row_data json)
-  RETURNS text AS $$
-  DECLARE
-    id text;
-    payload json;
-    session_variables json;
-    server_version_num int;
-    trace_context json;
-  BEGIN
-    id := gen_random_uuid();
-    server_version_num := current_setting('server_version_num');
-    IF server_version_num >= 90600 THEN
-      session_variables := current_setting('hasura.user', 't');
-      trace_context := current_setting('hasura.tracecontext', 't');
-    ELSE
-      BEGIN
-        session_variables := current_setting('hasura.user');
-      EXCEPTION WHEN OTHERS THEN
-                  session_variables := NULL;
-      END;
-      BEGIN
-        trace_context := current_setting('hasura.tracecontext');
-      EXCEPTION WHEN OTHERS THEN
-        trace_context := NULL;
-      END;
-    END IF;
-    payload := json_build_object(
-      'op', op,
-      'data', row_data,
-      'session_variables', session_variables,
-      'trace_context', trace_context
-    );
-    INSERT INTO hdb_catalog.event_log
-                (id, schema_name, table_name, trigger_name, payload)
-    VALUES
-    (id, schema_name, table_name, trigger_name, payload);
-    RETURN id;
-  END;
-$$ LANGUAGE plpgsql;

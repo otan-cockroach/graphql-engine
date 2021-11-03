@@ -708,7 +708,7 @@ CREATE SCHEMA IF NOT EXISTS hdb_views;
 -- See Note [Migration of schema related to table event triggers log] in 42_to_43.sql
 CREATE TABLE IF NOT EXISTS hdb_catalog.event_log
 (
-  id TEXT DEFAULT hdb_catalog.gen_hasura_uuid() PRIMARY KEY,
+  id TEXT DEFAULT gen_random_uuid()::string PRIMARY KEY,
   schema_name TEXT NOT NULL,
   table_name TEXT NOT NULL,
   trigger_name TEXT NOT NULL,
@@ -730,7 +730,7 @@ CREATE INDEX IF NOT EXISTS event_log_created_at_idx ON hdb_catalog.event_log (cr
 
 CREATE TABLE IF NOT EXISTS hdb_catalog.event_invocation_logs
 (
-  id TEXT DEFAULT hdb_catalog.gen_hasura_uuid() PRIMARY KEY,
+  id TEXT DEFAULT gen_random_uuid()::string PRIMARY KEY,
   event_id TEXT,
   status INTEGER,
   request JSON,
@@ -741,7 +741,7 @@ CREATE TABLE IF NOT EXISTS hdb_catalog.event_invocation_logs
 );
 
 CREATE INDEX IF NOT EXISTS event_invocation_logs_event_id_idx ON hdb_catalog.event_invocation_logs (event_id);
-
+/*
 CREATE OR REPLACE FUNCTION
   hdb_catalog.insert_event_log(schema_name text, table_name text, trigger_name text, op text, row_data json)
   RETURNS text AS $$
@@ -752,7 +752,7 @@ CREATE OR REPLACE FUNCTION
     server_version_num int;
     trace_context json;
   BEGIN
-    id := gen_random_uuid();
+    id := gen_random_uuid()::string;
     server_version_num := current_setting('server_version_num');
     IF server_version_num >= 90600 THEN
       session_variables := current_setting('hasura.user', 't');
@@ -782,3 +782,4 @@ CREATE OR REPLACE FUNCTION
     RETURN id;
   END;
 $$ LANGUAGE plpgsql;
+*/
