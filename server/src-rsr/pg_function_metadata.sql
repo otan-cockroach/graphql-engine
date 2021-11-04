@@ -48,7 +48,8 @@ FROM (
           ELSE NULL :: text
         END AS function_type,
 
-        pg_get_functiondef(p.oid) AS function_definition,
+        --pg_get_functiondef(p.oid)
+        NULL AS function_definition,
 
         rtn.nspname::text as return_type_schema,
         rt.typname::text as return_type_name,
