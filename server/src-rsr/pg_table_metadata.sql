@@ -39,7 +39,7 @@ LEFT JOIN LATERAL
       'position', "column".attnum,
       'type', coalesce(base_type.typname, "type".typname),
       'is_nullable', NOT "column".attnotnull,
-      'description', pg_catalog.col_description("table".oid, "column".attnum)
+      'description', NULL -- pg_catalog.col_description("table".oid, "column".attnum)
     )) AS info
     FROM pg_catalog.pg_attribute "column"
     LEFT JOIN pg_catalog.pg_type "type"
